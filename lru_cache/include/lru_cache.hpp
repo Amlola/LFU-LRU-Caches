@@ -4,9 +4,7 @@
 #include <list>
 #include <iostream>
 #include <cstddef>
-#include <ostream>
 #include <unordered_map>
-#include <functional>
 
 namespace Cache {
 
@@ -17,7 +15,7 @@ namespace Cache {
         using ListIterator = typename std::list<Keyt>::iterator;
         std::list<T> cache;  
 
-        std::unordered_map<Keyt, ListIterator> hash_table;
+        std::unordered_map<Keyt, ListIterator> hash_map;
 
         bool Full() const {
 
@@ -27,33 +25,26 @@ namespace Cache {
     public:
         LRUCache(size_t cap) : capacity(cap) {};
 
-#ifdef DEBUG_LRU_CACHE
-        void DebugPrint() const {
-
-            std::cout << "list: ";
-            for (auto cache_it : cache) {
-                std::cout << cache_it << " ";
-            }
-
-        std::cout << std::endl;
-        }     
-#endif
+    #ifdef DEBUG_CACHE
+        template<typename U, typename V> 
+        friend void DebugPrintLRUCache(const LRUCache<U, V>& map);  
+    #endif
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
 
-            auto hit = hash_table.find(key);
-            if (hit == hash_table.end()) {
+            auto hit = hash_map.find(key);
+            if (hit == hash_map.end()) {
                 if (Full()) {
-                    hash_table.erase(cache.back());
+                    hash_map.erase(cache.back());
                     cache.pop_back();
                 }
 
                 cache.push_front(SlowGetPage(key));
-                hash_table[key] = cache.begin();
+                hash_map[key] = cache.begin();
 
-            #ifdef DEBUG_LRU_CACHE
-                DebugPrint();
+            #ifdef DEBUG_CACHE
+                DebugPrintLRUCache(*this);
             #endif
 
                 return false;
@@ -64,13 +55,32 @@ namespace Cache {
                 cache.splice(cache.begin(), cache, find_page_it, std::next(find_page_it));
             }
 
-            #ifdef DEBUG_LRU_CACHE
-                DebugPrint();
-            #endif
+        #ifdef DEBUG_CACHE
+            DebugPrintLRUCache(*this);
+        #endif
 
             return true;
         }
+
+        T GetCachedValue(Keyt key) const {
+            return *(hash_map.at(key));
+        }
     };
+
+#ifdef DEBUG_CACHE
+    template<typename U, typename V> 
+    void DebugPrintLRUCache(const LRUCache<U, V>& map) {
+
+    std::cout << std::endl << "hash_map: ";
+
+    for (const auto& pair : map.hash_map) {
+        std::cout << pair.first << ": ->" << *(pair.second) << "  ";
+    }
+
+    std::cout << "\n\n";
+    }  
+#endif
+
 }
 
 #endif // LRU_CACHE_HPP

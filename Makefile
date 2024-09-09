@@ -7,28 +7,28 @@ CXX := g++
 CXXFLAGS := -Wall -Wextra -std=c++17
 OPT_FLAGS := -O2
 
-OUTPUT := main
+BUILD_DIR := build
 
 ifeq ($(LRU_CACHE), 1)
 SRC_DIR_CPP := lru_cache/source
-BUILD_DIR := lru_cache/build
 INCLUDE_DIR := lru_cache/include
+OUTPUT := lru_cache
 endif 
 
 ifeq ($(LFU_CACHE), 1)
 SRC_DIR_CPP := lfu_cache/source
-BUILD_DIR := lfu_cache/build
 INCLUDE_DIR := lfu_cache/include
+OUTPUT := lfu_cache
 endif 
 
 ifeq ($(PERFECT_CACHE), 1)
 SRC_DIR_CPP := perfect_cache/source
-BUILD_DIR := perfect_cache/build
 INCLUDE_DIR := perfect_cache/include
+OUTPUT := perfect_cache
 endif 
 
 ifeq ($(DEBUG), 1)
-CXXFLAGS += -D DEBUG_LRU_CACHE
+CXXFLAGS += -D DEBUG_CACHE
 DEBUG_FLAGS := -g -fsanitize=address,undefined
 OPT_FLAGS := -O0
 endif
