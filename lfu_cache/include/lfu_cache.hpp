@@ -9,9 +9,10 @@
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class LFUCache {
+    class LFUCache final {
 
         size_t capacity;
+        
         using ListIterator = typename std::list<Keyt>::iterator;
         std::list<T> cache;  
 
@@ -23,7 +24,7 @@ namespace Cache {
         }
 
         public:
-            LFUCache(size_t cap) : capacity(cap) {}; // READ: about this
+            LFUCache(size_t cap) : capacity(cap) {};
 
         #ifdef DEBUG_CACHE
             template<typename U, typename V> 
@@ -32,7 +33,8 @@ namespace Cache {
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
-            // TODO: it's time to do this
+            
+
         }
     };
 

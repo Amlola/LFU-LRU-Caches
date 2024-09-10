@@ -1,9 +1,10 @@
 #include <string>
 #include <cstring>
+#include <string_view>
 #include "lru_cache.hpp"
 
-std::string SlowGetPage(std::string key) {
-    return key;
+int SlowGetPage(const std::string& key) {
+    return key.length();
 }
 
 int RecursiveFib(int n, Cache::LRUCache<int, int>& cache) {
@@ -12,7 +13,7 @@ int RecursiveFib(int n, Cache::LRUCache<int, int>& cache) {
         return 1;
     }
 
-    cache.LookupUpdate(n, [&](int key) {    // READ: about this
+    cache.LookupUpdate(n, [&](int key) {
 
         return RecursiveFib(key - 1, cache) + RecursiveFib(key - 2, cache);
     });
@@ -30,13 +31,13 @@ int main(int argc, const char* argv[]) {
     else {
         size_t capacity = 0;
     
-        if (!strcmp(argv[1], "str")) {
+        if (!strcmp(argv[1], "len")) {
             size_t num_elem = 0;
 
-            std::cout << "Enter cache size and number of elements" << std::endl;
+            std::cout << std::endl << "Enter cache size and number of elements" << std::endl;
             std::cin >> capacity >> num_elem;
 
-            Cache::LRUCache<std::string, std::string> cache(capacity);
+            Cache::LRUCache<int, std::string> cache(capacity);
 
             std::string elem = "";
 

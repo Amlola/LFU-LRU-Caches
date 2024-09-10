@@ -12,8 +12,9 @@ namespace Cache {
     class LRUCache final {
 
         size_t capacity;
-        using ListIterator = typename std::list<Keyt>::iterator;
-        std::list<T> cache;  
+
+        using ListIterator = typename std::list<std::pair<T, Keyt>>::iterator;
+        std::list<std::pair<T, Keyt>> cache;  
 
         std::unordered_map<Keyt, ListIterator> hash_map;
 
@@ -36,11 +37,11 @@ namespace Cache {
             auto hit = hash_map.find(key);
             if (hit == hash_map.end()) {
                 if (Full()) {
-                    hash_map.erase(cache.back());
+                    hash_map.erase(cache.back().second);
                     cache.pop_back();
                 }
 
-                cache.push_front(SlowGetPage(key));
+                cache.push_front({SlowGetPage(key), key});
                 hash_map[key] = cache.begin();
 
             #ifdef DEBUG_CACHE
@@ -63,21 +64,27 @@ namespace Cache {
         }
 
         T GetCachedValue(Keyt key) const {
-            return *(hash_map.at(key));
+            return (*(hash_map.at(key))).first;
         }
     };
 
 #ifdef DEBUG_CACHE
     template<typename U, typename V> 
-    void DebugPrintLRUCache(const LRUCache<U, V>& map) {
+    void DebugPrintLRUCache(const LRUCache<U, V>& lru_cache) {
 
-    std::cout << std::endl << "hash_map: ";
+        std::cout << std::endl << "hash_map: ";
 
-    for (const auto& pair : map.hash_map) {
-        std::cout << pair.first << ": ->" << *(pair.second) << "  ";
-    }
+        for (const auto& pair : lru_cache.hash_map) {
+            std::cout << pair.first << ": ->" << (*(pair.second)).first << "  ";
+        }
 
-    std::cout << "\n\n";
+        std::cout << std::endl << "list: ";
+
+        for (const auto& elem : lru_cache.cache) {
+            std::cout << elem.first << " ";
+        }
+
+        std::cout << "\n\n";
     }  
 #endif
 
