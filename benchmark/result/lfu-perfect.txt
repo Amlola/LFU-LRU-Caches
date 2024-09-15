@@ -1,17 +1,24 @@
 TEST LFU-PERFECT CACHE:
 
 TEST 1: with cache_size = 25 and num_elements = 100000. Numbers = [0; 50]
-Perfect time: 20 ms
-LFU time: 22 ms
-LFU gain in speed: 0.909091
+Perfect time: 24 ms
+LFU time: 24 ms
+LFU gain in speed: 1
+Perfect hits = 77494
+LFU hits = 48918
+Hit ratio (perfect / LFU) = 1.58416
 
 TEST 2: with cache_size = 100001 and num_elements = 100000. Numbers = [0; 50]
-Perfect time: 8 ms
+Perfect time: 10 ms
 LFU time: 13 ms
-LFU gain in speed: 0.615385
+LFU gain in speed: 0.769231
+Perfect hits = 99949
+LFU hits = 99949
+Hit ratio (perfect / LFU) = 1
 
 TEST 3: with cache_size = 100001 and num_elements = 100000. Numbers = [0; 100000] (without replays)
-Perfect time: 35 ms
-LFU time: 16 ms
-LFU gain in speed: 2.1875
-
+Perfect time: 34 ms
+LFU time: 17 ms
+LFU gain in speed: 2
+Perfect hits = 0
+LFU hits = 0

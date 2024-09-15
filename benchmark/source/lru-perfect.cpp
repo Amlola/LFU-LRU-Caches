@@ -35,12 +35,17 @@ int main(int argc, const char* argv[]) {
 
     infile.close();
 
+    size_t num_hits_perfect = 0;
+    size_t num_hits_lru = 0;
+
     auto start_time_perfect = std::chrono::high_resolution_clock::now();
 
     Cache::PerfectCache<int> perfect_cache(cache_size, numbers);
 
     for (size_t i = 0; i < num_elements; i++) {
-        perfect_cache.LookupUpdate(numbers[i], SlowGetPage);
+        if (perfect_cache.LookupUpdate(numbers[i], SlowGetPage)) {
+            num_hits_perfect++;
+        }
     }
 
     auto end_time_perfect = std::chrono::high_resolution_clock::now();
@@ -51,7 +56,9 @@ int main(int argc, const char* argv[]) {
     Cache::LRUCache<int> lru_cache(cache_size);
 
     for (size_t i = 0; i < num_elements; i++) {
-        lru_cache.LookupUpdate(numbers[i], SlowGetPage);
+        if (lru_cache.LookupUpdate(numbers[i], SlowGetPage)) {
+            num_hits_lru++;
+        }
     }
 
     auto end_time_lru = std::chrono::high_resolution_clock::now();
@@ -59,7 +66,12 @@ int main(int argc, const char* argv[]) {
 
     std::cout << "Perfect time: " << duration_perfect.count() << " ms" << std::endl;
     std::cout << "LRU time: " << duration_lru.count() << " ms" << std::endl;
-    std::cout << "LRU gain in speed: " << double(duration_perfect.count()) / double(duration_lru.count()) << "\n\n";
+    std::cout << "LRU gain in speed: " << double(duration_perfect.count()) / double(duration_lru.count()) << "\n";
+    std::cout << "Perfect hits = " << num_hits_perfect << "\n";
+    std::cout << "LRU hits = " << num_hits_lru << "\n";
+
+    if (num_hits_lru != 0)
+        std::cout << "Hit ratio (perfect / LFU) = " << double(num_hits_perfect) / double(num_hits_lru) << "\n\n";
 
     return 0;
 }

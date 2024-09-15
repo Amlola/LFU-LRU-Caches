@@ -76,14 +76,10 @@ namespace Cache {
                     if (max_list_it != key_indexes.end() && num_cache_find != 1) {
                         cache.erase(hash_map[max_list_it->first]);
                         hash_map.erase(max_list_it->first);
-                    }
-
-                    else if (num_cache_find == 1 && max_list_it->first != cache.back().second) {
+                    } else if (num_cache_find == 1 && max_list_it->first != cache.back().second) {
                         hash_map.erase(cache.back().second);
                         cache.pop_back();
-                    }
-
-                    else {
+                    } else {
                         hash_map.erase(cache.front().second);
                         cache.pop_front();
                     }
