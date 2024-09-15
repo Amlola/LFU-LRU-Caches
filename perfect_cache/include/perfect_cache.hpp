@@ -119,7 +119,7 @@ namespace Cache {
             std::cout << "  ";
         }
 
-        std::cout << "\n\n";
+        std::cout << std::endl;
     }  
 #endif
 

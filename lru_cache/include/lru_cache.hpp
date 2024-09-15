@@ -84,7 +84,7 @@ namespace Cache {
             std::cout << elem.first << " ";
         }
 
-        std::cout << "\n\n";
+        std::cout << std::endl;
     }  
 #endif
 

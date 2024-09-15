@@ -1,6 +1,7 @@
 #include "perfect_cache.hpp"
 
 int SlowGetPage(int key) {
+    
     return key;
 }
 

@@ -1,13 +1,13 @@
 #include <string>
 #include <cstring>
-#include <string_view>
 #include "lru_cache.hpp"
 
 int SlowGetPage(const std::string& key) {
+    
     return key.length();
 }
 
-int RecursiveFib(int n, Cache::LRUCache<int, int>& cache) {
+int RecursiveFib(int n, Cache::LRUCache<int>& cache) {
 
     if (n <= 2) {
         return 1;
