@@ -17,7 +17,7 @@ int main() {
 
     int elem = 0;
 
-     for (size_t i = 0; i < num_elem; i++) {
+    for (size_t i = 0; i < num_elem; i++) {
         std::cin >> elem;
 
         keys.push_back(elem);

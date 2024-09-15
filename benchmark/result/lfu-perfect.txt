@@ -1,0 +1,17 @@
+TEST LFU-PERFECT CACHE:
+
+TEST 1: with cache_size = 25 and num_elements = 100000. Numbers = [0; 50]
+Perfect time: 20 ms
+LFU time: 22 ms
+LFU gain in speed: 0.909091
+
+TEST 2: with cache_size = 100001 and num_elements = 100000. Numbers = [0; 50]
+Perfect time: 8 ms
+LFU time: 13 ms
+LFU gain in speed: 0.615385
+
+TEST 3: with cache_size = 100001 and num_elements = 100000. Numbers = [0; 100000] (without replays)
+Perfect time: 35 ms
+LFU time: 16 ms
+LFU gain in speed: 2.1875
+

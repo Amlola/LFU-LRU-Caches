@@ -44,7 +44,10 @@ namespace Cache {
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
 
             auto index_it = key_indexes.find(key); 
-            index_it->second.pop_front(); // pop_front from list indexes
+
+            if (index_it != key_indexes.end())
+                index_it->second.pop_front(); // pop_front from list indexes
+
             if (index_it->second.empty()) {
                 key_indexes.erase(key);
             }
@@ -54,22 +57,35 @@ namespace Cache {
                 if (Full()) {
                     auto max_list_it = key_indexes.end();
 
+                    size_t num_cache_find = 0;
+
                     for (auto& pair : cache) {
                         auto cur_it_indexes = key_indexes.find(pair.second);
+
+                        if (cur_it_indexes == key_indexes.end()) {
+                            continue;
+                        }
+
+                        num_cache_find++;
 
                         if (max_list_it == key_indexes.end() || cur_it_indexes->second.front() > max_list_it->second.front()) {
                             max_list_it = cur_it_indexes;
                         }
                     }
 
-                    if (max_list_it != key_indexes.end()) {
+                    if (max_list_it != key_indexes.end() && num_cache_find != 1) {
                         cache.erase(hash_map[max_list_it->first]);
                         hash_map.erase(max_list_it->first);
                     }
 
-                    else { // if not indexes used LRU
+                    else if (num_cache_find == 1 && max_list_it->first != cache.back().second) {
                         hash_map.erase(cache.back().second);
                         cache.pop_back();
+                    }
+
+                    else {
+                        hash_map.erase(cache.front().second);
+                        cache.pop_front();
                     }
                 }
 
