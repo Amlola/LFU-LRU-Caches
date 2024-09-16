@@ -99,5 +99,5 @@ $ ./Test
 ### Benchmark:
 ``` cmd
 $ cd ..
-$ ./sh bench.sh
+$ sh bench.sh
 ```
