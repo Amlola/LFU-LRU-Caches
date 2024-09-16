@@ -71,7 +71,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "LRU hits = " << num_hits_lru << "\n";
 
     if (num_hits_lru != 0)
-        std::cout << "Hit ratio (perfect / LFU) = " << double(num_hits_perfect) / double(num_hits_lru) << "\n\n";
+        std::cout << "Hit ratio (perfect / LRU) = " << double(num_hits_perfect) / double(num_hits_lru) << "\n\n";
 
     return 0;
 }

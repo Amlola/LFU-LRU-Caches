@@ -44,16 +44,17 @@ namespace Cache {
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
 
             auto index_it = key_indexes.find(key); 
-
+        
             if (index_it != key_indexes.end())
                 index_it->second.pop_front(); // pop_front from list indexes
 
-            if (index_it->second.empty()) {
-                key_indexes.erase(key);
-            }
-
             auto hit = hash_map.find(key);
             if (hit == hash_map.end()) {
+                if (index_it->second.empty()) {
+                    key_indexes.erase(key);
+                    return false;
+                }
+
                 if (Full()) {
                     auto max_list_it = key_indexes.end();
 

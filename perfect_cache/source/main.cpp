@@ -12,7 +12,6 @@ int main() {
 
     std::vector<int> keys;
 
-    std::cout << std::endl << "Enter cache size and number of elements" << std::endl;
     std::cin >> capacity >> num_elem;
 
     int elem = 0;
@@ -33,8 +32,7 @@ int main() {
         }
     }
 
-    std::cout << "--------------------------------" << "\n\n";
-    std::cout << "num hits = " << num_hits << std::endl;
+    std::cout << num_hits << std::endl;
 
     return 0;
 }

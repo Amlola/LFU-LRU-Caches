@@ -1,24 +1,24 @@
 TEST LRU-PERFECT CACHE:
 
-TEST 1: with cache_size = 25 and num_elements = 100000
-Perfect time: 19 ms
-LRU time: 9 ms
-LRU gain in speed: 2.11111
-Perfect hits = 77494
-LRU hits = 48918
-Hit ratio (perfect / LFU) = 1.58416
+TEST 1: with cache_size = 25 and num_elements = 1000000
+Perfect time: 67 ms
+LRU time: 33 ms
+LRU gain in speed: 2.0303
+Perfect hits = 775535
+LRU hits = 490325
+Hit ratio (perfect / LRU) = 1.58168
 
-TEST 2: with cache_size = 100001 and num_elements = 100000. Numbers = [0; 50]
-Perfect time: 9 ms
-LRU time: 1 ms
-LRU gain in speed: 9
-Perfect hits = 99949
-LRU hits = 99949
-Hit ratio (perfect / LFU) = 1
+TEST 2: with cache_size = 1000001 and num_elements = 1000000. Numbers = [0; 50]
+Perfect time: 31 ms
+LRU time: 4 ms
+LRU gain in speed: 7.75
+Perfect hits = 999949
+LRU hits = 999949
+Hit ratio (perfect / LRU) = 1
 
-TEST 3: with cache_size = 100001 and num_elements = 100000. Numbers = [0; 100000] (without replays)
-Perfect time: 33 ms
-LRU time: 14 ms
-LRU gain in speed: 2.35714
+TEST 3: with cache_size = 1000001 and num_elements = 1000000. Numbers = [0; 1000000] (without replays)
+Perfect time: 82 ms
+LRU time: 56 ms
+LRU gain in speed: 1.46429
 Perfect hits = 0
 LRU hits = 0

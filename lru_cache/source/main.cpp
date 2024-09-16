@@ -29,17 +29,33 @@ int SlowGetPageNum(int key) {
 int main(int argc, const char* argv[]) {
 
     if (argc < 2) {
-        std::cerr << "FAIL! Usage: ./build/lru_cache fib or ./build/lru_cache str" << std::endl;
-        return -1;
-    }
+        size_t capacity = 0;
+        size_t num_elem = 0;
 
-    else {
+        std::cin >> capacity >> num_elem;
+
+        Cache::LRUCache<int> cache(capacity);
+
+        size_t num_hits = 0;
+
+        int elem = 0;
+
+        for (size_t i = 0; i < num_elem; i++) {
+            std::cin >> elem;
+
+            if (cache.LookupUpdate(elem, SlowGetPageNum)) {
+                num_hits++;
+            }
+        }
+
+        std::cout << num_hits << std::endl;
+
+    } else {
         size_t capacity = 0;
     
         if (!strcmp(argv[1], "len")) {
             size_t num_elem = 0;
 
-            std::cout << std::endl << "Enter cache size and number of elements" << std::endl;
             std::cin >> capacity >> num_elem;
 
             Cache::LRUCache<int, std::string> cache(capacity);
@@ -56,51 +72,22 @@ int main(int argc, const char* argv[]) {
                 }
             }
 
-            std::cout << "--------------------------------" << "\n\n";
-            std::cout << "num hits = " << num_hits << std::endl;
-        }
+            std::cout << num_hits << std::endl;
 
-        else if (!strcmp(argv[1], "fib")) {
+        } else if (!strcmp(argv[1], "fib")) {
             int fib_num = 0;
 
-            std::cout << std::endl << "Enter cache size and Fibonacci number" << std::endl;
             std::cin >> capacity >> fib_num;
 
             Cache::LRUCache<int> fib_cache(capacity);
 
             int result = RecursiveFib(fib_num, fib_cache);
 
-            std::cout << "--------------------------------" << "\n\n";
-            std::cout << "result = " << result << std::endl;
-        }
+            std::cout << result << std::endl;
 
-        else if (!strcmp(argv[1], "num")) {
-            size_t num_elem = 0;
-
-            std::cout << std::endl << "Enter cache size and number of elements" << std::endl;
-            std::cin >> capacity >> num_elem;
-
-            Cache::LRUCache<int> cache(capacity);
-
-            size_t num_hits = 0;
-
-            int elem = 0;
-
-            for (size_t i = 0; i < num_elem; i++) {
-                std::cin >> elem;
-
-                if (cache.LookupUpdate(elem, SlowGetPageNum)) {
-                    num_hits++;
-                }
-            }
-
-            std::cout << "--------------------------------" << "\n\n";
-            std::cout << "num hits = " << num_hits << std::endl;
-        }
-
-        else {
-            std::cerr << "Error: unknown argument" << std::endl;
-            return -1;
+        } else {
+            std::cerr << "FAIL! Usage: ./build/lru_cache fib or ./build/lru_cache len" << std::endl;
+            return 1;
         }
     }
 

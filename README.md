@@ -1,4 +1,4 @@
-# LFU-Cache
+# Caches
 
 ## Description
 

@@ -10,7 +10,6 @@ int main() {
     size_t capacity = 0;
     size_t num_elem = 0;
 
-    std::cout << std::endl << "Enter cache size and number of elements" << std::endl;
     std::cin >> capacity >> num_elem;
 
     Cache::LFUCache<int> cache(capacity);
@@ -27,8 +26,7 @@ int main() {
         }
     }
 
-    std::cout << "--------------------------------" << "\n\n";
-    std::cout << "num hits = " << num_hits << std::endl;
+    std::cout << num_hits << std::endl;
 
     return 0;
 }
