@@ -44,46 +44,40 @@ namespace Cache {
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
 
             auto index_it = key_indexes.find(key); 
-        
-            if (index_it != key_indexes.end())
-                index_it->second.pop_front(); // pop_front from list indexes
+            index_it->second.pop_front(); // pop_front from list indexes
 
             auto hit = hash_map.find(key);
             if (hit == hash_map.end()) {
                 if (index_it->second.empty()) {
                     key_indexes.erase(key);
-                    return false;
+                     return false;
                 }
 
                 if (Full()) {
-                    auto max_list_it = key_indexes.end();
+                    auto max_list_it = key_indexes.find(key);
 
-                    size_t num_cache_find = 0;
+                    Keyt key_to_pop = key;
 
                     for (auto& pair : cache) {
                         auto cur_it_indexes = key_indexes.find(pair.second);
 
-                        if (cur_it_indexes == key_indexes.end()) {
-                            continue;
+                        if (cur_it_indexes->second.empty()) {
+                            key_to_pop = cur_it_indexes->first;
+                            key_indexes.erase(key_to_pop);
+                            break;
                         }
 
-                        num_cache_find++;
-
-                        if (max_list_it == key_indexes.end() || cur_it_indexes->second.front() > max_list_it->second.front()) {
+                        if (cur_it_indexes->second.front() >= max_list_it->second.front()) {
                             max_list_it = cur_it_indexes;
+                            key_to_pop  = cur_it_indexes->first;
                         }
                     }
 
-                    if (max_list_it != key_indexes.end() && num_cache_find != 1) {
-                        cache.erase(hash_map[max_list_it->first]);
-                        hash_map.erase(max_list_it->first);
-                    } else if (num_cache_find == 1 && max_list_it->first != cache.back().second) {
-                        hash_map.erase(cache.back().second);
-                        cache.pop_back();
-                    } else {
-                        hash_map.erase(cache.front().second);
-                        cache.pop_front();
-                    }
+                    if (key_to_pop == key)
+                        return false;
+
+                    cache.erase(hash_map[key_to_pop]);
+                    hash_map.erase(key_to_pop);   
                 }
 
                 cache.push_front({SlowGetPage(key), key});
