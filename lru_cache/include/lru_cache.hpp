@@ -13,8 +13,15 @@ namespace Cache {
 
         size_t capacity;
 
-        using ListIterator = typename std::list<std::pair<T, Keyt>>::iterator;
-        std::list<std::pair<T, Keyt>> cache;  
+        struct CachedElem final {
+            T cached_elem;
+            Keyt key;
+
+            CachedElem(T elem, Keyt key_) : cached_elem(elem), key(key_) {};
+        };
+
+        using ListIterator = typename std::list<CachedElem>::iterator;
+        std::list<CachedElem> cache;  
 
         std::unordered_map<Keyt, ListIterator> hash_map;
 
@@ -37,11 +44,11 @@ namespace Cache {
             auto hit = hash_map.find(key);
             if (hit == hash_map.end()) {
                 if (Full()) {
-                    hash_map.erase(cache.back().second);
+                    hash_map.erase(cache.back().key);
                     cache.pop_back();
                 }
 
-                cache.push_front({SlowGetPage(key), key});
+                cache.push_front(CachedElem(SlowGetPage(key), key));
                 hash_map[key] = cache.begin();
 
             #ifdef DEBUG_CACHE
@@ -64,7 +71,8 @@ namespace Cache {
         }
 
         T GetCachedValue(Keyt key) const {
-            return (*(hash_map.at(key))).first;
+            
+            return hash_map.at(key)->cached_elem;
         }
     };
 
@@ -75,13 +83,13 @@ namespace Cache {
         std::cout << std::endl << "hash_map: ";
 
         for (const auto& pair : lru_cache.hash_map) {
-            std::cout << pair.first << ": ->" << (*(pair.second)).first << "  ";
+            std::cout << pair.first << ": ->" << pair.second->cached_elem << "  ";
         }
 
         std::cout << std::endl << "list: ";
 
         for (const auto& elem : lru_cache.cache) {
-            std::cout << elem.first << " ";
+            std::cout << elem.cached_elem << " ";
         }
 
         std::cout << std::endl;

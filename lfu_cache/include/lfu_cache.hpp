@@ -60,10 +60,11 @@ namespace Cache {
 
                 CachedElem new_elem(SlowGetPage(key), key);
 
-                cache[start_frequency].push_front(new_elem);
+                auto& start_freq_list = cache[start_frequency];
+                start_freq_list.push_front(new_elem);
                 min_frequency = start_frequency;
 
-                hash_map[key] = cache[start_frequency].begin();
+                hash_map[key] = start_freq_list.begin();
 
             #ifdef DEBUG_CACHE
                 DebugPrintLFUCache(*this);
@@ -72,8 +73,10 @@ namespace Cache {
                 return false;
             }
 
-            CachedElem find_elem = *(hit->second);
-            cache[find_elem.frequency].erase(hit->second);
+            ListIterator find_cached_elem_list_it = hit->second;
+
+            CachedElem find_elem = *(find_cached_elem_list_it);
+            cache[find_elem.frequency].erase(find_cached_elem_list_it);
 
             if (cache[find_elem.frequency].empty() && find_elem.frequency == min_frequency) {
                 cache.erase(find_elem.frequency);
@@ -81,9 +84,10 @@ namespace Cache {
             }
 
             find_elem.frequency++;
-            cache[find_elem.frequency].push_front(find_elem);
+            auto& new_freq_list = cache[find_elem.frequency];
+            new_freq_list.push_front(find_elem);
 
-            hash_map[key] = cache[find_elem.frequency].begin(); // FIFO
+            hash_map[key] = new_freq_list.begin(); // FIFO
 
         #ifdef DEBUG_CACHE
             DebugPrintLFUCache(*this);

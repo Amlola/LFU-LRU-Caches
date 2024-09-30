@@ -5,20 +5,29 @@
 #include <list>
 #include <cstddef>
 #include <unordered_map>
+#include <map>
 #include <vector>
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class PerfectCache {
+    class PerfectCache final {
 
         size_t capacity;
 
-        using ListIterator = typename std::list<std::pair<T, Keyt>>::iterator;
-        std::list<std::pair<T, Keyt>> cache;  
+        struct CachedElem final {
+            T cached_elem;
+            Keyt key;
 
-        std::unordered_map<Keyt, ListIterator> hash_map;
-        std::unordered_map<Keyt, std::list<size_t>> key_indexes;
+            CachedElem(T elem, Keyt key_) : cached_elem(elem), key(key_) {};
+            CachedElem() = default;
+        };
+
+        using MapIterator = typename std::map<int, CachedElem>::iterator;
+        std::map<int, CachedElem> cache;  
+
+        std::unordered_map<Keyt, MapIterator> hash_map;
+        std::unordered_map<Keyt, std::vector<int>> key_indexes;
 
         bool Full() const {
 
@@ -28,10 +37,10 @@ namespace Cache {
     public:
         PerfectCache(size_t cap, const std::vector<Keyt>& keys) : capacity(cap) { // fill map indexes
             
-            size_t keys_size = keys.size();
+            int last_elem_index = keys.size() - 1;
 
-            for (size_t i = 0; i < keys_size; i++) {
-                key_indexes[keys[i]].push_back(i);
+            for (int index_keys = last_elem_index; index_keys >= 0; index_keys--) {
+                key_indexes[keys[index_keys]].push_back(index_keys);
             }
         }
 
@@ -44,50 +53,65 @@ namespace Cache {
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
 
             auto index_it = key_indexes.find(key); 
-            index_it->second.pop_front(); // pop_front from list indexes
+            index_it->second.pop_back(); // pop_back from list indexes
 
             auto hit = hash_map.find(key);
             if (hit == hash_map.end()) {
                 if (index_it->second.empty()) {
                     key_indexes.erase(key);
-                     return false;
+                    return false;
                 }
 
                 if (Full()) {
-                    auto max_list_it = key_indexes.find(key);
-
                     Keyt key_to_pop = key;
 
-                    for (auto& pair : cache) {
-                        auto cur_it_indexes = key_indexes.find(pair.second);
+                    auto it = cache.end();
+                    it--;
 
-                        if (cur_it_indexes->second.empty()) {
-                            key_to_pop = cur_it_indexes->first;
-                            key_indexes.erase(key_to_pop);
-                            break;
-                        }
-
-                        if (cur_it_indexes->second.front() >= max_list_it->second.front()) {
-                            max_list_it = cur_it_indexes;
-                            key_to_pop  = cur_it_indexes->first;
-                        }
+                    if (cache.begin()->first < 0) {
+                        key_to_pop = cache.begin()->second.key;
+                        it = cache.begin();
+                    } else if (key_indexes[it->second.key].empty()) {
+                        key_to_pop = it->second.key;
+                        key_indexes.erase(key_to_pop);
+                    } else if (it->first >= key_indexes[key].back()) {
+                        key_to_pop = it->second.key;
+                    } else {
+                        return false;
                     }
 
-                    if (key_to_pop == key)
+                    if (key_to_pop == key) {
                         return false;
+                    }
 
-                    cache.erase(hash_map[key_to_pop]);
-                    hash_map.erase(key_to_pop);   
+                    cache.erase(it);
+                    hash_map.erase(key_to_pop);    
                 }
 
-                cache.push_front({SlowGetPage(key), key});
-                hash_map[key] = cache.begin();
+                int key_insert_place = index_it->second.back();
+                CachedElem new_elem(CachedElem(SlowGetPage(key), key));
+                cache.emplace(key_insert_place, new_elem);
+
+                hash_map[key] = cache.find(key_insert_place);
 
             #ifdef DEBUG_CACHE
                 DebugPrintPerfectCache(*this);
             #endif
 
                 return false;
+            }
+
+            CachedElem cur_elem = hit->second->second;
+
+            if (!index_it->second.empty()) {
+                cache.erase(hit->second);
+                cache[index_it->second.back()] = cur_elem;
+                hash_map[key] = cache.find(index_it->second.back());
+            } else {
+                int place = -hit->second->first;
+                cache.erase(hit->second);
+                cache[place] = cur_elem;
+                hash_map[key] = cache.find(place);
             }
 
         #ifdef DEBUG_CACHE
@@ -104,14 +128,14 @@ namespace Cache {
 
         std::cout << std::endl << "hash_map: ";
 
-        for (const auto& pair : perfect_cache.hash_map) {
-            std::cout << pair.first << ": ->" << (*(pair.second)).first << "  ";
-        }
+        // for (const auto& pair : perfect_cache.hash_map) {
+        //     std::cout << pair.first << ": ->" << pair.second->cached_elem << "  ";
+        // }
 
         std::cout << std::endl << "list: ";
 
         for (const auto& elem : perfect_cache.cache) {
-            std::cout << elem.first << " ";
+            std::cout << elem.second.cached_elem << ":" << elem.first << " ";
         }
 
         std::cout << std::endl << "indexes_map: ";
@@ -119,7 +143,7 @@ namespace Cache {
         for (const auto& pair : perfect_cache.key_indexes) {
             std::cout << pair.first << ": ";
 
-            for (const size_t& value : pair.second) {
+            for (const int& value : pair.second) {
                 std::cout << value << " ";
             }
 

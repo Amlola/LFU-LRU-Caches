@@ -9,7 +9,7 @@ set(PERFECT_INCLUDE_DIR ../perfect_cache/include)
 set(LFU_INCLUDE_DIR ../lfu_cache/include)
 set(LRU_INCLUDE_DIR ../lru_cache/include)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fsanitize=address,undefined")
 
 add_executable(${PROJECT_NAME} test.cpp)
 

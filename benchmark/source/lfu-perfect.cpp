@@ -42,8 +42,8 @@ int main(int argc, const char* argv[]) {
 
     Cache::PerfectCache<int> perfect_cache(cache_size, numbers);
 
-    for (size_t i = 0; i < num_elements; i++) {
-        if (perfect_cache.LookupUpdate(numbers[i], SlowGetPage)) {
+    for (const auto& cur_key : numbers) {
+        if (perfect_cache.LookupUpdate(cur_key, SlowGetPage)) {
             num_hits_perfect++;
         }
     }
@@ -55,8 +55,8 @@ int main(int argc, const char* argv[]) {
 
     Cache::LFUCache<int> lfu_cache(cache_size);
 
-    for (size_t i = 0; i < num_elements; i++) {
-        if (lfu_cache.LookupUpdate(numbers[i], SlowGetPage)) {
+    for (const auto& cur_key : numbers) {
+        if (lfu_cache.LookupUpdate(cur_key, SlowGetPage)) {
             num_hits_lfu++;
         }
     }

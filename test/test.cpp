@@ -171,7 +171,7 @@ TEST(LRU_Test, CompareLruHits) {
     }
 }
 
-TEST(Pefect_Test, CompareLruHits) {
+TEST(Pefect_Test, ComparePerfectHits) {
 
     std::vector<int> perfect_hits_received = PerfectCacheGetHits();
     std::vector<int> perfect_hits_expected = GetExpectedHits("../expected_data/perfect_check_hits.txt");
@@ -186,7 +186,7 @@ TEST(Pefect_Test, CompareLruHits) {
     }
 }
 
-TEST(LFU_Test, CompareLruHits) {
+TEST(LFU_Test, CompareLFUHits) {
 
     std::vector<int> lfu_hits_received = LfuCacheGetHits();
     std::vector<int> lfu_hits_expected = GetExpectedHits("../expected_data/lfu_check_hits.txt");
