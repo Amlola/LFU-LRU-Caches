@@ -2,7 +2,6 @@
 #define PERFECT_CACHE_HPP
 
 #include <iostream>
-#include <list>
 #include <cstddef>
 #include <unordered_map>
 #include <map>
@@ -65,34 +64,29 @@ namespace Cache {
                 if (Full()) {
                     Keyt key_to_pop = key;
 
-                    auto it = cache.end();
-                    it--;
+                    auto remove_elem_it = cache.end();
+                    remove_elem_it--;
 
-                    if (cache.begin()->first < 0) {
-                        key_to_pop = cache.begin()->second.key;
-                        it = cache.begin();
-                    } else if (key_indexes[it->second.key].empty()) {
-                        key_to_pop = it->second.key;
-                        key_indexes.erase(key_to_pop);
-                    } else if (it->first >= key_indexes[key].back()) {
-                        key_to_pop = it->second.key;
+                    auto cache_start_it = cache.begin();
+
+                    if (cache_start_it->first < 0) {
+                        key_to_pop = cache_start_it->second.key;
+                        remove_elem_it = cache_start_it;
+                    } else if (remove_elem_it->first > key_indexes[key].back()) {
+                        key_to_pop = remove_elem_it->second.key;
                     } else {
                         return false;
                     }
 
-                    if (key_to_pop == key) {
-                        return false;
-                    }
-
-                    cache.erase(it);
+                    cache.erase(remove_elem_it);
                     hash_map.erase(key_to_pop);    
                 }
 
-                int key_insert_place = index_it->second.back();
+                int insert_elem_index = index_it->second.back();
                 CachedElem new_elem(CachedElem(SlowGetPage(key), key));
-                cache.emplace(key_insert_place, new_elem);
+                cache.emplace(insert_elem_index, new_elem);
 
-                hash_map[key] = cache.find(key_insert_place);
+                hash_map.emplace(key, cache.find(insert_elem_index));
 
             #ifdef DEBUG_CACHE
                 DebugPrintPerfectCache(*this);
@@ -101,18 +95,21 @@ namespace Cache {
                 return false;
             }
 
-            CachedElem cur_elem = hit->second->second;
+            auto key_vector         = index_it->second;
+            MapIterator cur_elem_it = hit->second;
+            CachedElem cur_elem     = cur_elem_it->second;
 
-            if (!index_it->second.empty()) {
-                cache.erase(hit->second);
-                cache[index_it->second.back()] = cur_elem;
-                hash_map[key] = cache.find(index_it->second.back());
+            int new_index_elem = 0;
+
+            if (!key_vector.empty()) {
+                new_index_elem = key_vector.back();
             } else {
-                int place = -hit->second->first;
-                cache.erase(hit->second);
-                cache[place] = cur_elem;
-                hash_map[key] = cache.find(place);
+                new_index_elem = -cur_elem_it->first;
             }
+
+            cache.erase(cur_elem_it);
+            cache[new_index_elem] = cur_elem;
+            hash_map[key] = cache.find(new_index_elem);
 
         #ifdef DEBUG_CACHE
             DebugPrintPerfectCache(*this);
@@ -125,12 +122,6 @@ namespace Cache {
 #ifdef DEBUG_CACHE
     template<typename U, typename V> 
     void DebugPrintPerfectCache(const PerfectCache<U, V>& perfect_cache) {
-
-        std::cout << std::endl << "hash_map: ";
-
-        // for (const auto& pair : perfect_cache.hash_map) {
-        //     std::cout << pair.first << ": ->" << pair.second->cached_elem << "  ";
-        // }
 
         std::cout << std::endl << "list: ";
 
