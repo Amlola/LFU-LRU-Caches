@@ -21,18 +21,8 @@ To compile all three caches and get three executable files, use:
 
 ``` cmd
 $ mkdir build
-$ cd build
-$ сmake ..
-$ make
-```
-
-if you need to compile a specific cache (for example lru_cache):
-
-``` cmd
-$ mkdir build
-$ cd build
-$ сmake ..
-$ make lru_cache
+$ cmake -S ./ -B build/Release -DDEBUG=OFF
+$ cmake --build build/Release
 ```
 
 ### Debug mode
@@ -41,9 +31,8 @@ $ make lru_cache
 
 ``` cmd
 $ mkdir build
-$ cd build
-$ сmake -DDEBUG=ON ..
-$ make
+cmake -S ./ -B build/Debug -DDEBUG=ON
+cmake --build build/Debug
 ```
 
 ### Test mode
@@ -78,17 +67,28 @@ The binaries are in the build folder
 ``` cmd
 $ ./build/lru_cache arg
 ```
-
-```arg``` must contain one of three commands: ```num```, ```len```, ```fib```. The first two are used exclusively for debugging, with ```fib``` you can calculate the Fibbonacci number using caching
-
-### LFU cache: 
-``` cmd
-$ ./build/lfu_cache
+or for base mode:
+```
+$ ./build/lru_cache
 ```
 
-### Perfect cache:
+```arg``` may contain one of two commands: ```len```, ```fib```. The first is used exclusively for debugging, with ```fib``` you can calculate the Fibbonacci number using caching
+
+### Caches: 
+* Debug
 ``` cmd
-$ ./build/perfect_cache
+$ cd build/Debug/bin/
+$ ./lfu_cache
+$ ./lru_cache
+$ ./perfect_cache
+```
+
+* Release
+``` cmd
+$ cd build/Debug/bin/
+$ ./lfu_cache
+$ ./lru_cache
+$ ./perfect_cache
 ```
 
 ### Test:
