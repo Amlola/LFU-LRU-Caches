@@ -13,12 +13,12 @@ int SlowGetPage(int key) {
 int main(int argc, const char* argv[]) {
 
     if (argc < 2) {
-        std::cerr << "FAIL! Usage: ./exec filename" << std::endl;
+        std::cerr << "FAIL! Usage: ./exec filename\n";
     }
 
     std::ifstream infile(argv[1]);
     if (!infile.is_open()) {
-        std::cerr << "Error: can't open file" << std::endl;
+        std::cerr << "Error: can't open file\n";
         return 1;
     }
 
@@ -64,8 +64,8 @@ int main(int argc, const char* argv[]) {
     auto end_time_lru = std::chrono::high_resolution_clock::now();
     auto duration_lru = std::chrono::duration_cast<std::chrono::milliseconds>(end_time_lru - start_time_lru);
 
-    std::cout << "Perfect time: " << duration_perfect.count() << " ms" << std::endl;
-    std::cout << "LRU time: " << duration_lru.count() << " ms" << std::endl;
+    std::cout << "Perfect time: " << duration_perfect.count() << " ms\n";
+    std::cout << "LRU time: " << duration_lru.count() << " ms\n";
     std::cout << "LRU gain in speed: " << double(duration_perfect.count()) / double(duration_lru.count()) << "\n";
     std::cout << "Perfect hits = " << num_hits_perfect << "\n";
     std::cout << "LRU hits = " << num_hits_lru << "\n";
