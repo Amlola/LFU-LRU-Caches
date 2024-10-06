@@ -31,8 +31,8 @@ $ cmake --build build/Release
 
 ``` cmd
 $ mkdir build
-cmake -S ./ -B build/Debug -DDEBUG=ON
-cmake --build build/Debug
+$ cmake -S ./ -B build/Debug -DDEBUG=ON
+$ cmake --build build/Debug
 ```
 
 ### Test mode
@@ -85,7 +85,7 @@ $ ./perfect_cache
 
 * Release
 ``` cmd
-$ cd build/Debug/bin/
+$ cd build/Release/bin/
 $ ./lfu_cache
 $ ./lru_cache
 $ ./perfect_cache

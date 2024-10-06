@@ -22,17 +22,22 @@ int main() {
         keys.push_back(elem);
     }
 
-    Cache::PerfectCache<int> cache(capacity, keys);
+    try {
+        Cache::PerfectCache<int> cache(capacity, keys);
 
-    size_t num_hits = 0;
+        size_t num_hits = 0;
 
-    for (const auto& cur_key : keys) {
-        if (cache.LookupUpdate(cur_key, SlowGetPage)) {
-            num_hits++;
+        for (const auto& cur_key : keys) {
+            if (cache.LookupUpdate(cur_key, SlowGetPage)) {
+                num_hits++;
+            }
         }
-    }
 
-    std::cout << num_hits << std::endl;
+        std::cout << num_hits << "\n";
+
+    } catch (const std::invalid_argument& err) {
+        std::cerr << "Error: " << err.what() << "\n";
+    }
 
     return 0;
 }

@@ -32,7 +32,7 @@ std::vector<std::vector<int>> GetAllKeys() {
                 if (file >> key) {
                     keys.push_back(key);
                 } else {
-                    std::cerr << "Uknown error" << std::endl;
+                    std::cerr << "Uknown error\n";
                     break;
                 }
             }
@@ -43,7 +43,7 @@ std::vector<std::vector<int>> GetAllKeys() {
         file.close();
 
     } else {
-        std::cerr << "Can't open file: " << file_name << std::endl;
+        std::cerr << "Can't open file: " << file_name << "\n";
     }
     
     return all_keys;
@@ -61,7 +61,7 @@ std::vector<int> GetExpectedHits(const std::string& filename) {
         }
         file.close();
     } else {
-        std::cerr << "Can't open file: " << filename << std::endl;
+        std::cerr << "Can't open file: " << filename << "\n";
     }
 
     return expected_hits;
@@ -69,15 +69,15 @@ std::vector<int> GetExpectedHits(const std::string& filename) {
 
 std::vector<int> LruCacheGetHits() {
 
-    std::vector<std::vector<int>> all_keys = GetAllKeys();
+    const std::vector<std::vector<int>>& all_keys = GetAllKeys();
 
-    size_t all_keys_size = all_keys.size();
+    const size_t& all_keys_size = all_keys.size();
 
     std::vector<int> all_hits;
 
     for (size_t i = 0; i < all_keys_size; i++) {
-        std::vector<int>& cur_keys = all_keys[i];
-        size_t cur_keys_size = cur_keys.size();
+        const std::vector<int>& cur_keys = all_keys[i];
+        const size_t& cur_keys_size = cur_keys.size();
 
         Cache::LRUCache<int> cache(cur_keys[0]);
 
@@ -97,15 +97,15 @@ std::vector<int> LruCacheGetHits() {
 
 std::vector<int> LfuCacheGetHits() {
 
-    std::vector<std::vector<int>> all_keys = GetAllKeys();
+    const std::vector<std::vector<int>>& all_keys = GetAllKeys();
 
     size_t all_keys_size = all_keys.size();
 
     std::vector<int> all_hits;
 
     for (size_t i = 0; i < all_keys_size; i++) {
-        std::vector<int>& cur_keys = all_keys[i];
-        size_t cur_keys_size = cur_keys.size();
+        const std::vector<int>& cur_keys = all_keys[i];
+        const size_t& cur_keys_size = cur_keys.size();
 
         Cache::LFUCache<int> cache(cur_keys[0]);
 
@@ -125,9 +125,9 @@ std::vector<int> LfuCacheGetHits() {
 
 std::vector<int> PerfectCacheGetHits() {
 
-    std::vector<std::vector<int>> all_keys = GetAllKeys();
+    const std::vector<std::vector<int>>& all_keys = GetAllKeys();
 
-    size_t all_keys_size = all_keys.size();
+    const size_t& all_keys_size = all_keys.size();
 
     std::vector<int> all_hits;
 
@@ -138,7 +138,7 @@ std::vector<int> PerfectCacheGetHits() {
 
         cur_keys.erase(cur_keys.begin());
 
-        size_t cur_keys_size = cur_keys.size();
+        const size_t& cur_keys_size = cur_keys.size();
 
         Cache::PerfectCache<int> cache(cache_size, cur_keys);
 
@@ -158,11 +158,11 @@ std::vector<int> PerfectCacheGetHits() {
 
 TEST(LRU_Test, CompareLruHits) {
 
-    std::vector<int> lru_hits_received = LruCacheGetHits();
-    std::vector<int> lru_hits_expected = GetExpectedHits("../expected_data/lru_check_hits.txt");
+    const std::vector<int>& lru_hits_received = LruCacheGetHits();
+    const std::vector<int>& lru_hits_expected = GetExpectedHits("../expected_data/lru_check_hits.txt");
 
-    size_t num_lru_hits_received = lru_hits_received.size();
-    size_t num_lru_hits_expected = lru_hits_expected.size();
+    const size_t& num_lru_hits_received = lru_hits_received.size();
+    const size_t& num_lru_hits_expected = lru_hits_expected.size();
 
     ASSERT_EQ(num_lru_hits_received, num_lru_hits_expected) << "The number of expected results does not match";
 
@@ -173,11 +173,11 @@ TEST(LRU_Test, CompareLruHits) {
 
 TEST(Pefect_Test, ComparePerfectHits) {
 
-    std::vector<int> perfect_hits_received = PerfectCacheGetHits();
-    std::vector<int> perfect_hits_expected = GetExpectedHits("../expected_data/perfect_check_hits.txt");
+    const std::vector<int>& perfect_hits_received = PerfectCacheGetHits();
+    const std::vector<int>& perfect_hits_expected = GetExpectedHits("../expected_data/perfect_check_hits.txt");
 
-    size_t num_perfect_hits_received = perfect_hits_received.size();
-    size_t num_perfect_hits_expected = perfect_hits_expected.size();
+    const size_t& num_perfect_hits_received = perfect_hits_received.size();
+    const size_t& num_perfect_hits_expected = perfect_hits_expected.size();
 
     ASSERT_EQ(num_perfect_hits_received, num_perfect_hits_expected) << "The number of expected results does not match";
 
@@ -188,11 +188,11 @@ TEST(Pefect_Test, ComparePerfectHits) {
 
 TEST(LFU_Test, CompareLFUHits) {
 
-    std::vector<int> lfu_hits_received = LfuCacheGetHits();
-    std::vector<int> lfu_hits_expected = GetExpectedHits("../expected_data/lfu_check_hits.txt");
+    const std::vector<int>& lfu_hits_received = LfuCacheGetHits();
+    const std::vector<int>& lfu_hits_expected = GetExpectedHits("../expected_data/lfu_check_hits.txt");
 
-    size_t num_lfu_hits_received = lfu_hits_received.size();
-    size_t num_lfu_hits_expected = lfu_hits_expected.size();
+    const size_t& num_lfu_hits_received = lfu_hits_received.size();
+    const size_t& num_lfu_hits_expected = lfu_hits_expected.size();
 
     ASSERT_EQ(num_lfu_hits_received, num_lfu_hits_expected) << "The number of expected results does not match";
 

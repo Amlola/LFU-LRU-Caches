@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstddef>
+#include <stdexcept>
 #include <unordered_map>
 #include <map>
 #include <vector>
@@ -19,7 +20,6 @@ namespace Cache {
             Keyt key;
 
             CachedElem(T elem, Keyt key_) : cached_elem(elem), key(key_) {};
-            CachedElem() = default;
         };
 
         using MapIterator = typename std::map<int, CachedElem>::iterator;
@@ -35,18 +35,31 @@ namespace Cache {
 
     public:
         PerfectCache(size_t cap, const std::vector<Keyt>& keys) : capacity(cap) { // fill map indexes
+
+            if (cap == 0) {
+                throw std::invalid_argument("Zero cache size");
+            }
+
+            int keys_size = keys.size();
+
+            if (keys_size <= 0) {
+                throw std::invalid_argument("No pages to cache");
+            }
             
-            int last_elem_index = keys.size() - 1;
+            const int& last_elem_index = keys_size - 1;
 
             for (int index_keys = last_elem_index; index_keys >= 0; index_keys--) {
                 key_indexes[keys[index_keys]].push_back(index_keys);
             }
         }
 
-    #ifdef DEBUG_CACHE
-        template<typename U, typename V> 
-        friend void DebugPrintPerfectCache(const PerfectCache<U, V>& map);  
-    #endif
+        const std::map<int, CachedElem>& GetCache() const {
+            return cache;
+        }   
+
+        const std::unordered_map<Keyt, std::vector<int>>& GetKeyIndexes() const {
+            return key_indexes;
+        }
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
@@ -64,9 +77,7 @@ namespace Cache {
                 if (Full()) {
                     Keyt key_to_pop = key;
 
-                    auto remove_elem_it = cache.end();
-                    remove_elem_it--;
-
+                    auto remove_elem_it = std::prev(cache.end());
                     auto cache_start_it = cache.begin();
 
                     if (cache_start_it->first < 0) {
@@ -82,11 +93,11 @@ namespace Cache {
                     hash_map.erase(key_to_pop);    
                 }
 
-                int insert_elem_index = index_it->second.back();
+                const int& insert_elem_index = index_it->second.back();
                 CachedElem new_elem(CachedElem(SlowGetPage(key), key));
-                cache.emplace(insert_elem_index, new_elem);
+                const auto& new_elem_it = cache.emplace(insert_elem_index, new_elem);
 
-                hash_map.emplace(key, cache.find(insert_elem_index));
+                hash_map.emplace(key, new_elem_it.first);
 
             #ifdef DEBUG_CACHE
                 DebugPrintPerfectCache(*this);
@@ -95,7 +106,7 @@ namespace Cache {
                 return false;
             }
 
-            auto key_vector         = index_it->second;
+            const auto& key_vector  = index_it->second;
             MapIterator cur_elem_it = hit->second;
             CachedElem cur_elem     = cur_elem_it->second;
 
@@ -108,8 +119,8 @@ namespace Cache {
             }
 
             cache.erase(cur_elem_it);
-            cache[new_index_elem] = cur_elem;
-            hash_map[key] = cache.find(new_index_elem);
+            auto new_elem_it = cache.emplace(new_index_elem, cur_elem);
+            hash_map[key] = new_elem_it.first;
 
         #ifdef DEBUG_CACHE
             DebugPrintPerfectCache(*this);
@@ -119,32 +130,33 @@ namespace Cache {
         }
     };
 
-#ifdef DEBUG_CACHE
-    template<typename U, typename V> 
-    void DebugPrintPerfectCache(const PerfectCache<U, V>& perfect_cache) {
+    template<typename T, typename Keyt> 
+    void DebugPrintPerfectCache(const PerfectCache<T, Keyt>& perfect_cache) {
 
-        std::cout << std::endl << "list: ";
+        std::cout << "\nlist: ";
 
-        for (const auto& elem : perfect_cache.cache) {
-            std::cout << elem.second.cached_elem << ":" << elem.first << " ";
+        const auto& cache = perfect_cache.GetCache();
+
+        for (const auto&[index, elem] : cache) {
+            std::cout << elem.cached_elem << ":" << index << " ";
         }
 
-        std::cout << std::endl << "indexes_map: ";
+        std::cout << "\nindexes_map: ";
 
-        for (const auto& pair : perfect_cache.key_indexes) {
-            std::cout << pair.first << ": ";
+        const auto& key_indexes = perfect_cache.GetKeyIndexes();
 
-            for (const int& value : pair.second) {
+        for (const auto&[key, indexes] : key_indexes) {
+            std::cout << key << ": ";
+
+            for (const int& value : indexes) {
                 std::cout << value << " ";
             }
 
             std::cout << "  ";
         }
 
-        std::cout << std::endl;
+        std::cout << "\n";
     }  
-#endif
-
-};
+}
 
 #endif // PERFECT_CACHE_HPP

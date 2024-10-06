@@ -12,21 +12,26 @@ int main() {
 
     std::cin >> capacity >> num_elem;
 
-    Cache::LFUCache<int> cache(capacity);
+    try {
+        Cache::LFUCache<int> cache(capacity);
 
-    int elem = 0;
+        int elem = 0;
 
-    size_t num_hits = 0;
+        size_t num_hits = 0;
 
-    for (size_t i = 0; i < num_elem; i++) {
-        std::cin >> elem;
+        for (size_t i = 0; i < num_elem; i++) {
+            std::cin >> elem;
 
-        if (cache.LookupUpdate(elem, SlowGetPage)) {
-            num_hits++;
+            if (cache.LookupUpdate(elem, SlowGetPage)) {
+                num_hits++;
+            }
         }
-    }
 
-    std::cout << num_hits << std::endl;
+        std::cout << num_hits << "\n";
+
+    } catch (const std::invalid_argument& err) {
+            std::cerr << "Error: " << err.what() << "\n";
+        }
 
     return 0;
 }
