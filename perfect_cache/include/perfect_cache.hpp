@@ -3,19 +3,22 @@
 
 #include <iostream>
 #include <cstddef>
+#include <ostream>
 #include <stdexcept>
 #include <unordered_map>
 #include <map>
 #include <vector>
+#include "unified_cache.hpp"
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class PerfectCache final {
+    class PerfectCache final : public CacheBase<PerfectCache<T, Keyt>, T, Keyt> {
 
-        size_t capacity;
+        using CacheBase<PerfectCache<T, Keyt>, T, Keyt>::capacity;
 
         struct CachedElem final {
+
             T cached_elem;
             Keyt key;
 
@@ -33,12 +36,31 @@ namespace Cache {
             return cache.size() == capacity;
         }
 
-    public:
-        PerfectCache(size_t cap, const std::vector<Keyt>& keys) : capacity(cap) { // fill map indexes
+        void DebugPrintPerfectCache(std::ostream& os) const {
 
-            if (cap == 0) {
-                throw std::invalid_argument("Zero cache size");
+            os << "\nlist: ";
+
+            for (const auto&[index, elem] : cache) {
+                os << elem.cached_elem << ":" << index << " ";
             }
+
+            os << "\nindexes_map: ";
+
+            for (const auto&[key, indexes] : key_indexes) {
+                os << key << ": ";
+
+                for (const int& value : indexes) {
+                    os << value << " ";
+                }
+
+                os << "  ";
+            }
+
+            os << "\n";
+        }  
+
+    public:
+        PerfectCache(size_t cap, const std::vector<Keyt>& keys) : CacheBase<PerfectCache<T, Keyt>, T, Keyt>(cap) { // fill map indexes
 
             int keys_size = keys.size();
 
@@ -51,14 +73,6 @@ namespace Cache {
             for (int index_keys = last_elem_index; index_keys >= 0; index_keys--) {
                 key_indexes[keys[index_keys]].push_back(index_keys);
             }
-        }
-
-        const std::map<int, CachedElem>& GetCache() const {
-            return cache;
-        }   
-
-        const std::unordered_map<Keyt, std::vector<int>>& GetKeyIndexes() const {
-            return key_indexes;
         }
 
         template<typename SlowGetPage_t>
@@ -100,7 +114,7 @@ namespace Cache {
                 hash_map.emplace(key, new_elem_it.first);
 
             #ifdef DEBUG_CACHE
-                DebugPrintPerfectCache(*this);
+                DebugPrintPerfectCache(std::cout);
             #endif
 
                 return false;
@@ -123,40 +137,12 @@ namespace Cache {
             hash_map[key] = new_elem_it.first;
 
         #ifdef DEBUG_CACHE
-            DebugPrintPerfectCache(*this);
+            DebugPrintPerfectCache(std::cout);
         #endif
 
             return true;
         }
     };
-
-    template<typename T, typename Keyt> 
-    void DebugPrintPerfectCache(const PerfectCache<T, Keyt>& perfect_cache) {
-
-        std::cout << "\nlist: ";
-
-        const auto& cache = perfect_cache.GetCache();
-
-        for (const auto&[index, elem] : cache) {
-            std::cout << elem.cached_elem << ":" << index << " ";
-        }
-
-        std::cout << "\nindexes_map: ";
-
-        const auto& key_indexes = perfect_cache.GetKeyIndexes();
-
-        for (const auto&[key, indexes] : key_indexes) {
-            std::cout << key << ": ";
-
-            for (const int& value : indexes) {
-                std::cout << value << " ";
-            }
-
-            std::cout << "  ";
-        }
-
-        std::cout << "\n";
-    }  
 }
 
 #endif // PERFECT_CACHE_HPP

@@ -1,39 +1,47 @@
+#include <any>
 #include <cstddef>
 #include <gtest/gtest.h>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
 #include <vector>
 #include <fstream>
 #include "lfu_cache.hpp"
 #include "perfect_cache.hpp"
 #include "lru_cache.hpp"
 
+using TestType = std::pair<std::vector<size_t>, std::vector<std::vector<int>>>;
+using KeysType = std::vector<std::vector<int>>;
+
 int SlowGetPage(int key) {
     
     return key;
 }
 
-std::vector<std::vector<int>> GetAllKeys() {
+TestType GetAllKeys() {
 
     const std::string file_name = "../data/test.txt";
-
     std::ifstream file(file_name);
-    std::vector<std::vector<int>> all_keys;
+
+    KeysType all_keys;
     size_t cache_size = 0; 
     size_t num_elems  = 0;
 
     int key = 0;
 
+    std::vector<size_t> all_keys_size;
+
     if (file.is_open()) {
         while (file >> cache_size >> num_elems) {
             std::vector<int> keys;
 
-            keys.push_back(cache_size);
+            all_keys_size.push_back(cache_size);
 
             for (size_t i = 0; i < num_elems; i++) {
                 if (file >> key) {
                     keys.push_back(key);
                 } else {
-                    std::cerr << "Uknown error\n";
-                    break;
+                    throw std::runtime_error("Uknown Error");
                 }
             }
 
@@ -43,16 +51,16 @@ std::vector<std::vector<int>> GetAllKeys() {
         file.close();
 
     } else {
-        std::cerr << "Can't open file: " << file_name << "\n";
+        throw std::runtime_error("Can't open file");
     }
     
-    return all_keys;
+    return std::make_pair(all_keys_size, all_keys);
 }
 
-std::vector<int> GetExpectedHits(const std::string& filename) {
+std::vector<size_t> GetExpectedHits(const std::string& filename) {
 
     std::ifstream file(filename);
-    std::vector<int> expected_hits;
+    std::vector<size_t> expected_hits;
     int hits = 0;
 
     if (file.is_open()) {
@@ -61,93 +69,54 @@ std::vector<int> GetExpectedHits(const std::string& filename) {
         }
         file.close();
     } else {
-        std::cerr << "Can't open file: " << filename << "\n";
+        throw std::runtime_error("Can't open file");
     }
 
     return expected_hits;
 }
 
-std::vector<int> LruCacheGetHits() {
+template <typename CacheT>
+size_t CountHits(CacheT& cache, const std::vector<int>& cur_keys, const size_t& cur_keys_size) {
 
-    const std::vector<std::vector<int>>& all_keys = GetAllKeys();
+    size_t num_hits = 0;
 
-    const size_t& all_keys_size = all_keys.size();
+    for (size_t key = 0; key < cur_keys_size; key++) {
+        if (cache.Update(cur_keys[key], SlowGetPage)) {
+            num_hits++;
+        }
+    }
 
-    std::vector<int> all_hits;
+    return num_hits;
+}
 
-    for (size_t i = 0; i < all_keys_size; i++) {
+template <typename CacheT> 
+std::vector<size_t> GetCacheHits() {
+
+    const TestType& all_keys_and_size = GetAllKeys();
+
+    const std::vector<size_t>& all_keys_size = all_keys_and_size.first;
+    const KeysType& all_keys                 = all_keys_and_size.second;
+
+    const size_t& keys_size = all_keys.size();
+
+    std::vector<size_t> all_hits;
+
+    for (size_t i = 0; i < keys_size; i++) {
         const std::vector<int>& cur_keys = all_keys[i];
         const size_t& cur_keys_size = cur_keys.size();
 
-        Cache::LRUCache<int> cache(cur_keys[0]);
+        size_t num_hits = 0;
 
-        int num_hits = 0;
+        if constexpr (!std::is_same<CacheT, Cache::PerfectCache<int>>::value) {
+            CacheT cache(all_keys_size[i]);
 
-        for (size_t key = 1; key < cur_keys_size; key++) {
-            if (cache.LookupUpdate(cur_keys[key], SlowGetPage)) {
-                num_hits++;
-            }
+            num_hits = CountHits(cache, cur_keys, cur_keys_size);
         }
 
-        all_hits.push_back(num_hits);
-    }
+        else {
+            CacheT cache(all_keys_size[i], cur_keys);
 
-    return all_hits;
-}
-
-std::vector<int> LfuCacheGetHits() {
-
-    const std::vector<std::vector<int>>& all_keys = GetAllKeys();
-
-    size_t all_keys_size = all_keys.size();
-
-    std::vector<int> all_hits;
-
-    for (size_t i = 0; i < all_keys_size; i++) {
-        const std::vector<int>& cur_keys = all_keys[i];
-        const size_t& cur_keys_size = cur_keys.size();
-
-        Cache::LFUCache<int> cache(cur_keys[0]);
-
-        int num_hits = 0;
-
-        for (size_t key = 1; key < cur_keys_size; key++) {
-            if (cache.LookupUpdate(cur_keys[key], SlowGetPage)) {
-                num_hits++;
-            }
-        }
-
-        all_hits.push_back(num_hits);
-    }
-
-    return all_hits;
-}
-
-std::vector<int> PerfectCacheGetHits() {
-
-    const std::vector<std::vector<int>>& all_keys = GetAllKeys();
-
-    const size_t& all_keys_size = all_keys.size();
-
-    std::vector<int> all_hits;
-
-    for (size_t i = 0; i < all_keys_size; i++) {
-        std::vector<int> cur_keys = all_keys[i];
-
-        int cache_size = cur_keys[0];
-
-        cur_keys.erase(cur_keys.begin());
-
-        const size_t& cur_keys_size = cur_keys.size();
-
-        Cache::PerfectCache<int> cache(cache_size, cur_keys);
-
-        int num_hits = 0;
-
-        for (size_t key = 0; key < cur_keys_size; key++) {
-            if (cache.LookupUpdate(cur_keys[key], SlowGetPage)) {
-                num_hits++;
-            }
+            num_hits = CountHits(cache, cur_keys, cur_keys_size);
         }
 
         all_hits.push_back(num_hits);
@@ -158,8 +127,8 @@ std::vector<int> PerfectCacheGetHits() {
 
 TEST(LRU_Test, CompareLruHits) {
 
-    const std::vector<int>& lru_hits_received = LruCacheGetHits();
-    const std::vector<int>& lru_hits_expected = GetExpectedHits("../expected_data/lru_check_hits.txt");
+    const std::vector<size_t>& lru_hits_received = GetCacheHits<Cache::LRUCache<int>>();
+    const std::vector<size_t>& lru_hits_expected = GetExpectedHits("../expected_data/lru_check_hits.txt");
 
     const size_t& num_lru_hits_received = lru_hits_received.size();
     const size_t& num_lru_hits_expected = lru_hits_expected.size();
@@ -173,8 +142,8 @@ TEST(LRU_Test, CompareLruHits) {
 
 TEST(Pefect_Test, ComparePerfectHits) {
 
-    const std::vector<int>& perfect_hits_received = PerfectCacheGetHits();
-    const std::vector<int>& perfect_hits_expected = GetExpectedHits("../expected_data/perfect_check_hits.txt");
+    const std::vector<size_t>& perfect_hits_received = GetCacheHits<Cache::PerfectCache<int>>();
+    const std::vector<size_t>& perfect_hits_expected = GetExpectedHits("../expected_data/perfect_check_hits.txt");
 
     const size_t& num_perfect_hits_received = perfect_hits_received.size();
     const size_t& num_perfect_hits_expected = perfect_hits_expected.size();
@@ -188,8 +157,8 @@ TEST(Pefect_Test, ComparePerfectHits) {
 
 TEST(LFU_Test, CompareLFUHits) {
 
-    const std::vector<int>& lfu_hits_received = LfuCacheGetHits();
-    const std::vector<int>& lfu_hits_expected = GetExpectedHits("../expected_data/lfu_check_hits.txt");
+    const std::vector<size_t>& lfu_hits_received = GetCacheHits<Cache::LFUCache<int>>();
+    const std::vector<size_t>& lfu_hits_expected = GetExpectedHits("../expected_data/lfu_check_hits.txt");
 
     const size_t& num_lfu_hits_received = lfu_hits_received.size();
     const size_t& num_lfu_hits_expected = lfu_hits_expected.size();

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <string_view>
@@ -14,7 +15,7 @@ int RecursiveFib(int n, Cache::LRUCache<int>& cache) {
         return 1;
     }
 
-    cache.LookupUpdate(n, [&](int key) {
+    cache.Update(n, [&](int key) {
 
         return RecursiveFib(key - 1, cache) + RecursiveFib(key - 2, cache);
     });
@@ -29,13 +30,13 @@ int SlowGetPageNum(int key) {
 
 int main(int argc, const char* argv[]) {
 
-    if (argc < 2) {
-        size_t capacity = 0;
-        size_t num_elem = 0;
+    try {
+        if (argc < 2) {
+            size_t capacity = 0;
+            size_t num_elem = 0;
 
-        std::cin >> capacity >> num_elem;
+            std::cin >> capacity >> num_elem;
 
-        try {
             Cache::LRUCache<int> cache(capacity);
 
             size_t num_hits = 0;
@@ -45,26 +46,21 @@ int main(int argc, const char* argv[]) {
             for (size_t i = 0; i < num_elem; i++) {
                 std::cin >> elem;
 
-                if (cache.LookupUpdate(elem, SlowGetPageNum)) {
+                if (cache.Update(elem, SlowGetPageNum)) {
                     num_hits++;
                 }
             }
 
             std::cout << num_hits << "\n";
 
-        } catch (const std::invalid_argument& err) {
-            std::cerr << "Error: " << err.what() << "\n";
-        }
+        } else {
+            size_t capacity = 0;
+        
+            if (std::string_view(argv[1]) == "len") {
+                size_t num_elem = 0;
 
-    } else {
-        size_t capacity = 0;
-    
-        if (std::string_view(argv[1]) == "len") {
-            size_t num_elem = 0;
+                std::cin >> capacity >> num_elem;
 
-            std::cin >> capacity >> num_elem;
-
-            try {
                 Cache::LRUCache<int, std::string> cache(capacity);
 
                 std::string elem;
@@ -74,37 +70,33 @@ int main(int argc, const char* argv[]) {
                 for (size_t i = 0; i < num_elem; i++) {
                     std::cin >> elem;
 
-                    if (cache.LookupUpdate(elem, SlowGetPage)) {
+                    if (cache.Update(elem, SlowGetPage)) {
                         num_hits++;
                     }
                 }
 
                 std::cout << num_hits << "\n";
 
-            } catch (const std::invalid_argument& err) {
-                std::cerr << "Error: " << err.what() << "\n";
-            }
+            } else if (std::string_view(argv[1]) == "fib") {
+                int fib_num = 0;
 
-        } else if (std::string_view(argv[1]) == "fib") {
-            int fib_num = 0;
+                std::cin >> capacity >> fib_num;
 
-            std::cin >> capacity >> fib_num;
-
-            try {
                 Cache::LRUCache<int> fib_cache(capacity);
 
                 int result = RecursiveFib(fib_num, fib_cache);
 
                 std::cout << result << "\n";
 
-            } catch (const std::invalid_argument& err) {
-                std::cerr << "Error: " << err.what() << "\n";
+            } else {
+                std::cerr << "FAIL! Usage: ./build/lru_cache fib or ./build/lru_cache len\n";
+                return EXIT_FAILURE;
             }
-
-        } else {
-            std::cerr << "FAIL! Usage: ./build/lru_cache fib or ./build/lru_cache len\n";
-            return 1;
         }
+
+    } catch (const std::exception& err) {
+        std::cerr << "Error: " << err.what() << '\n';
+        return EXIT_FAILURE;
     }
 
     return 0;

@@ -4,17 +4,20 @@
 #include <list>
 #include <iostream>
 #include <cstddef>
+#include <ostream>
 #include <stdexcept>
 #include <unordered_map>
+#include "unified_cache.hpp"
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class LRUCache final {
+    class LRUCache final : public CacheBase<LRUCache<T, Keyt>, T, Keyt> {
 
-        size_t capacity;
+        using CacheBase<LRUCache<T, Keyt>, T, Keyt>::capacity;
 
         struct CachedElem final {
+
             T cached_elem;
             Keyt key;
 
@@ -30,23 +33,26 @@ namespace Cache {
 
             return cache.size() == capacity;
         }
-  
-    public:
-        LRUCache(size_t cap) : capacity(0) {
-            if (cap == 0) {
-                throw std::invalid_argument("Invalid cache size");
+
+        void DebugPrintLRUCache(std::ostream& os) const {
+
+            os << "\nhash_map: ";
+
+            for (const auto&[key, value] : hash_map) {
+                os << key << ": ->" << value->cached_elem << "  ";
             }
 
-            capacity = cap;
-        }
+            os << "\nlist: ";
 
-        const std::list<CachedElem>& GetCache() const {
-            return cache;
-        }   
+            for (const auto& elem : cache) {
+                os << elem.cached_elem << " ";
+            }
 
-        const std::unordered_map<Keyt, ListIterator>& GetHashMap() const {
-            return hash_map;
-        }
+            os << "\n\n";
+        }  
+  
+    public:
+        LRUCache(size_t cap) : CacheBase<LRUCache<T, Keyt>, T, Keyt>(cap) {}
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
@@ -62,7 +68,7 @@ namespace Cache {
                 hash_map.emplace(key, cache.begin());
 
             #ifdef DEBUG_CACHE
-                DebugPrintLRUCache(*this);
+                DebugPrintLRUCache(std::cout);
             #endif
 
                 return false;
@@ -74,7 +80,7 @@ namespace Cache {
             }
 
         #ifdef DEBUG_CACHE
-            DebugPrintLRUCache(*this);
+            DebugPrintLRUCache(std::cout);
         #endif
 
             return true;
@@ -85,28 +91,6 @@ namespace Cache {
             return hash_map.at(key)->cached_elem;
         }
     };
-
-    template<typename T, typename Keyt> 
-    void DebugPrintLRUCache(const LRUCache<T, Keyt>& lru_cache) {
-
-        std::cout << "\nhash_map: ";
-
-        const auto& hash_map = lru_cache.GetHashMap();
-
-        for (const auto&[key, value] : hash_map) {
-            std::cout << key << ": ->" << value->cached_elem << "  ";
-        }
-
-        std::cout << "\nlist: ";
-
-        const auto& cache = lru_cache.GetCache();
-
-        for (const auto& elem : cache) {
-            std::cout << elem.cached_elem << " ";
-        }
-
-        std::cout << "\n";
-    }  
 }
 
 #endif // LRU_CACHE_HPP

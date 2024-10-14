@@ -4,19 +4,23 @@
 #include <list>
 #include <iostream>
 #include <cstddef>
+#include <ostream>
 #include <unordered_map>
+#include "unified_cache.hpp"
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class LFUCache final {
+    class LFUCache final : public CacheBase<LFUCache<T, Keyt>, T, Keyt> {
 
         static constexpr size_t start_frequency = 1;
 
-        size_t capacity;
-        size_t min_frequency;
+        size_t min_frequency = 0;
+
+        using CacheBase<LFUCache<T, Keyt>, T, Keyt>::capacity;
 
         struct CachedElem final {
+
             T cached_elem;
             Keyt key;
             size_t frequency;
@@ -33,19 +37,26 @@ namespace Cache {
 
             return hash_map.size() == capacity;
         }
+        
+        void DebugPrintLFUCache(std::ostream& os) const {
 
-    public:
-        LFUCache(size_t cap) : capacity(0), min_frequency(0) {
-            if (cap == 0) {
-                throw std::invalid_argument("Invalid cache size");
+            os << "\ncache:\n";
+
+            for (const auto&[index, list] : cache) {
+                os << "freq " << index << ": ";
+
+                for (const auto& elems : list) {
+                    os << "(" << elems.key << ", " << elems.cached_elem << ", " << elems.frequency << ")  ";
+                }
+
+                os << "\n";
             }
 
-            capacity = cap;
-        };
-
-        const std::unordered_map<size_t, std::list<CachedElem>>& GetCache() const {
-            return cache;
+            os << "\n";
         }   
+
+    public:
+        LFUCache(size_t cap) : CacheBase<LFUCache<T, Keyt>, T, Keyt>(cap) {}
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {
@@ -72,7 +83,7 @@ namespace Cache {
                 hash_map.emplace(key, start_freq_list.begin());
 
             #ifdef DEBUG_CACHE
-                DebugPrintLFUCache(*this);
+                DebugPrintLFUCache(std::cout);
             #endif
 
                 return false;
@@ -95,32 +106,12 @@ namespace Cache {
             hash_map[key] = new_freq_list.begin(); // FIFO
 
         #ifdef DEBUG_CACHE
-            DebugPrintLFUCache(*this);
+            DebugPrintLFUCache(std::cout);
         #endif
 
             return true;
         }
-    };
-
-    template<typename T, typename Keyt> 
-    void DebugPrintLFUCache(const LFUCache<T, Keyt>& map) {
-
-        std::cout << "\ncache:\n";
-
-        const auto& cache = map.GetCache();
-
-        for (const auto&[index, list] : cache) {
-            std::cout << "freq " << index << ": ";
-
-            for (const auto& elems : list) {
-                std::cout << "(" << elems.key << ", " << elems.cached_elem << ", " << elems.frequency << ")  ";
-            }
-
-            std::cout << "\n";
-        }
-
-        std::cout << "\n";
-    }  
+    }; 
 }
 
 #endif // LFU_CACHE_HPP
