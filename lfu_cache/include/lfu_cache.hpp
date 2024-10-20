@@ -6,18 +6,17 @@
 #include <cstddef>
 #include <ostream>
 #include <unordered_map>
-#include "unified_cache.hpp"
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class LFUCache final : public CacheBase<LFUCache<T, Keyt>, T, Keyt> {
+    class LFUCache final {
 
         static constexpr size_t start_frequency = 1;
 
         size_t min_frequency = 0;
 
-        using CacheBase<LFUCache<T, Keyt>, T, Keyt>::capacity;
+        size_t capacity;
 
         struct CachedElem final {
 
@@ -56,7 +55,7 @@ namespace Cache {
         }   
 
     public:
-        LFUCache(size_t cap) : CacheBase<LFUCache<T, Keyt>, T, Keyt>(cap) {}
+        LFUCache(size_t cap) : capacity(cap) {}
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {

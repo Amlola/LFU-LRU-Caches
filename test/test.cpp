@@ -81,7 +81,7 @@ size_t CountHits(CacheT& cache, const std::vector<int>& cur_keys, const size_t& 
     size_t num_hits = 0;
 
     for (size_t key = 0; key < cur_keys_size; key++) {
-        if (cache.Update(cur_keys[key], SlowGetPage)) {
+        if (cache.LookupUpdate(cur_keys[key], SlowGetPage)) {
             num_hits++;
         }
     }

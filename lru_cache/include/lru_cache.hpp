@@ -7,14 +7,13 @@
 #include <ostream>
 #include <stdexcept>
 #include <unordered_map>
-#include "unified_cache.hpp"
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class LRUCache final : public CacheBase<LRUCache<T, Keyt>, T, Keyt> {
+    class LRUCache final {
 
-        using CacheBase<LRUCache<T, Keyt>, T, Keyt>::capacity;
+        size_t capacity;
 
         struct CachedElem final {
 
@@ -52,7 +51,7 @@ namespace Cache {
         }  
   
     public:
-        LRUCache(size_t cap) : CacheBase<LRUCache<T, Keyt>, T, Keyt>(cap) {}
+        LRUCache(size_t cap) : capacity(cap) {}
 
         template<typename SlowGetPage_t>
         bool LookupUpdate(Keyt key, SlowGetPage_t SlowGetPage) {

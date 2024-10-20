@@ -15,7 +15,7 @@ int RecursiveFib(int n, Cache::LRUCache<int>& cache) {
         return 1;
     }
 
-    cache.Update(n, [&](int key) {
+    cache.LookupUpdate(n, [&](int key) {
 
         return RecursiveFib(key - 1, cache) + RecursiveFib(key - 2, cache);
     });
@@ -46,7 +46,7 @@ int main(int argc, const char* argv[]) {
             for (size_t i = 0; i < num_elem; i++) {
                 std::cin >> elem;
 
-                if (cache.Update(elem, SlowGetPageNum)) {
+                if (cache.LookupUpdate(elem, SlowGetPageNum)) {
                     num_hits++;
                 }
             }
@@ -70,7 +70,7 @@ int main(int argc, const char* argv[]) {
                 for (size_t i = 0; i < num_elem; i++) {
                     std::cin >> elem;
 
-                    if (cache.Update(elem, SlowGetPage)) {
+                    if (cache.LookupUpdate(elem, SlowGetPage)) {
                         num_hits++;
                     }
                 }

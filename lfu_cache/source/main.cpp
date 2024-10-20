@@ -23,7 +23,7 @@ int main() {
             for (size_t i = 0; i < num_elem; i++) {
                 std::cin >> elem;
 
-                if (cache.Update(elem, SlowGetPage)) {
+                if (cache.LookupUpdate(elem, SlowGetPage)) {
                     num_hits++;
                 }
             }

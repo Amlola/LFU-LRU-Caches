@@ -28,7 +28,7 @@ int main() {
         size_t num_hits = 0;
 
         for (const auto& cur_key : keys) {
-            if (cache.Update(cur_key, SlowGetPage)) {
+            if (cache.LookupUpdate(cur_key, SlowGetPage)) {
                 num_hits++;
             }
         }

@@ -8,14 +8,13 @@
 #include <unordered_map>
 #include <map>
 #include <vector>
-#include "unified_cache.hpp"
 
 namespace Cache {
 
     template<typename T, typename Keyt = int> 
-    class PerfectCache final : public CacheBase<PerfectCache<T, Keyt>, T, Keyt> {
+    class PerfectCache final {
 
-        using CacheBase<PerfectCache<T, Keyt>, T, Keyt>::capacity;
+        size_t capacity;
 
         struct CachedElem final {
 
@@ -60,7 +59,7 @@ namespace Cache {
         }  
 
     public:
-        PerfectCache(size_t cap, const std::vector<Keyt>& keys) : CacheBase<PerfectCache<T, Keyt>, T, Keyt>(cap) { // fill map indexes
+        PerfectCache(size_t cap, const std::vector<Keyt>& keys) : capacity(cap) { // fill map indexes
 
             int keys_size = keys.size();
 
